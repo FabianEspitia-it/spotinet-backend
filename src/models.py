@@ -10,7 +10,6 @@ class Accounts(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     email = Column(String(255), unique=True, index=True)
-    email_password = Column(String(255))
     disney_password = Column(String(255))
     netflix_password = Column(String(255))
     created_at = Column(DateTime, server_default=func.now())
