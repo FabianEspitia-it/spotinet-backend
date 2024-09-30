@@ -10,11 +10,6 @@ from src.utils.netflix_methods import *
 from src.codes.schemas import ChangePasswordSchema
 
 
-from sqlalchemy.orm import Session
-
-from src.models import Accounts
-
-
 def get_code_email_by_email(email: str) -> str:
 
     time.sleep(7)

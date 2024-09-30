@@ -1,8 +1,5 @@
 from fastapi import APIRouter, status, Depends, BackgroundTasks, HTTPException
 from fastapi.responses import JSONResponse
-from sqlalchemy.orm import Session
-
-from src.database import get_db
 
 from src.codes.schemas import ChangePasswordSchema
 
