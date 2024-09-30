@@ -13,7 +13,7 @@ codes_router = APIRouter()
 
 
 @codes_router.get("/disney/session_code/{email}", tags=["disney_codes"])
-def get_code_email(email: str, db: Session = Depends(get_db)) -> JSONResponse:
+def get_code_email(email: str) -> JSONResponse:
     """
     Retrieve a specific code associated with an email from the database.
 
@@ -32,8 +32,10 @@ def get_code_email(email: str, db: Session = Depends(get_db)) -> JSONResponse:
     Raises:
         HTTPException: Raised with status code 404 if no code is found for the given email.
     """
-
-    code = get_code_email_by_email(email=email)
+    try:
+        code = get_code_email_by_email(email=email)
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
 
     if not code:
         raise HTTPException(status_code=404, detail="Code not found")
@@ -44,7 +46,7 @@ def get_code_email(email: str, db: Session = Depends(get_db)) -> JSONResponse:
 
 
 @codes_router.patch("/disney/update_password", tags=["disney_codes"])
-def update_password(info: ChangePasswordSchema, db: Session = Depends(get_db)) -> JSONResponse:
+def update_password(info: ChangePasswordSchema) -> JSONResponse:
     """
     Update the password associated with an email in the database.
 
@@ -59,8 +61,11 @@ def update_password(info: ChangePasswordSchema, db: Session = Depends(get_db)) -
     Returns:
         JSONResponse: A JSON response indicating the password was updated successfully.
     """
+    try:
+        update_password_by_email(info=info)
 
-    update_password_by_email(info=info, db=db)
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
 
     return JSONResponse(content={
         "message": "Password updated successfully",
@@ -68,23 +73,28 @@ def update_password(info: ChangePasswordSchema, db: Session = Depends(get_db)) -
 
 
 @codes_router.get("/netflix/temporal_access/{email}", tags=["netflix_codes"])
-def get_temporal_access(email: str, db: Session = Depends(get_db)) -> JSONResponse:
+def get_temporal_access(email: str) -> JSONResponse:
 
-    code = get_temporal_access_code_by_email(email=email, db=db)
+    try:
 
-    if not code:
-        raise HTTPException(status_code=404, detail="Code not found")
+        code = get_temporal_access_code_by_email(email=email)
+
+        if not code:
+            raise HTTPException(status_code=404, detail="Code not found")
+
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
 
     return JSONResponse(content={"code": code}, status_code=status.HTTP_200_OK)
 
 
 @codes_router.get("/netflix/home_code/{email}", tags=["netflix_codes"])
-def get_home_code(email: str, db: Session = Depends(get_db)) -> JSONResponse:
+def get_home_code(email: str) -> JSONResponse:
 
-    message = get_home_code_by_email(email=email, db=db)
-
-    if not message:
-        raise HTTPException(status_code=404, detail="Code not found")
+    try:
+        message = get_home_code_by_email(email=email)
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
 
     return JSONResponse(content={"content": message}, status_code=status.HTTP_200_OK)
 

@@ -7,13 +7,18 @@ import time
 
 from email.header import decode_header
 
+import pyperclip
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
 
-def get_netflix_code_email(user_email: str, netflix_password: str, email_subject: str) -> str:
+from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.common.action_chains import ActionChains
+
+
+def get_netflix_code_email(user_email: str, email_subject: str) -> str:
 
     mail = imaplib.IMAP4_SSL(os.getenv("IMAP_SERVER"))
 
@@ -27,7 +32,7 @@ def get_netflix_code_email(user_email: str, netflix_password: str, email_subject
     if status == "OK":
         message_ids = messages[0].split()
 
-        for msg_id in message_ids:
+        for msg_id in message_ids[::-1]:
             status, mensaje = mail.fetch(msg_id, "(RFC822)")
 
             if status == "OK":
@@ -43,6 +48,9 @@ def get_netflix_code_email(user_email: str, netflix_password: str, email_subject
 
                         new_subject: str = subject.replace(
                             " ", "").replace("RV:", "").replace("FW:", "")
+
+                        print(new_subject)
+                        print(email_subject)
 
                         if email_subject in new_subject:
 
@@ -63,7 +71,7 @@ def get_netflix_code_email(user_email: str, netflix_password: str, email_subject
 
                                 pattern = r'https://www\.netflix\.com/account/travel/verify\?nftoken=[\w-]+.*'
                             else:
-                                pattern = r'https://www.netflix.com/account/update-primary-location[\w-]+.*'
+                                pattern = r'https://www\.netflix\.com/account/update-primary-location\?nftoken=[\w\+\/-]+.*'
 
                             match = re.search(pattern, body)
 
@@ -76,28 +84,57 @@ def get_netflix_code_email(user_email: str, netflix_password: str, email_subject
 
                                 time.sleep(2)
 
-                                email_element = WebDriverWait(driver, 5).until(
-                                    EC.presence_of_element_located(
-                                        (By.XPATH, "//*[@id=':r0:']"))
-                                )
+                                try:
 
-                                email_element.send_keys(user_email)
+                                    email_element = WebDriverWait(driver, 5).until(
+                                        EC.presence_of_element_located(
+                                            (By.XPATH, "//*[@id=':r0:']"))
+                                    )
 
-                                password_element = WebDriverWait(driver, 5).until(
-                                    EC.presence_of_element_located(
-                                        (By.XPATH, "//*[@id=':r3:']"))
-                                )
+                                    email_element.send_keys(user_email)
 
-                                password_element.send_keys(netflix_password)
+                                    button = WebDriverWait(driver, 5).until(
+                                        EC.element_to_be_clickable(
+                                            (By.CSS_SELECTOR, 'button[data-uia="login-toggle-button"]'))
+                                    )
 
-                                submit_button = WebDriverWait(driver, 5).until(
-                                    EC.element_to_be_clickable(
-                                        (By.CSS_SELECTOR, 'button[data-uia="login-submit-button"]'))
-                                )
+                                    button.click()
 
-                                submit_button.click()
+                                    button_two = WebDriverWait(driver, 5).until(
+                                        EC.element_to_be_clickable(
+                                            (By.CSS_SELECTOR, 'button[data-uia="login-submit-button"]'))
+                                    )
 
-                                time.sleep(2)
+                                    button_two.click()
+
+                                    time.sleep(7)
+
+                                    session_code = get_netflix_code_email(
+                                        user_email=user_email)
+
+                                    first_input_box = WebDriverWait(driver, 10).until(
+                                        EC.visibility_of_element_located(
+                                            (By.CSS_SELECTOR, 'input.default-ltr-cache-u0nsmb-Digit.ecrfx4d3'))
+                                    )
+
+                                    pyperclip.copy(session_code)
+
+                                    first_input_box.click()
+
+                                    action = ActionChains(driver)
+                                    action.key_down(Keys.CONTROL).send_keys(
+                                        'v').key_up(Keys.CONTROL).perform()
+
+                                    submit_button = WebDriverWait(driver, 5).until(
+                                        EC.element_to_be_clickable(
+                                            (By.CSS_SELECTOR, 'button[type="submit"]'))
+                                    )
+
+                                    submit_button.click()
+
+                                    time.sleep(2)
+                                except Exception as e:
+                                    pass
 
                                 if email_subject == "Tu código de acceso temporal de Netflix".replace(" ", ""):
 
@@ -109,6 +146,8 @@ def get_netflix_code_email(user_email: str, netflix_password: str, email_subject
                                     return code.text
 
                                 else:
+
+                                    print("entramos")
                                     button = WebDriverWait(driver, 5).until(
                                         EC.element_to_be_clickable(
                                             (By.CSS_SELECTOR, 'button[data-uia="set-primary-location-action"]'))
@@ -124,7 +163,8 @@ def get_netflix_code_email(user_email: str, netflix_password: str, email_subject
                                 return 'No se encontró ningún link'
 
                         else:
-                            return "No se encontró el asunto del correo"
+                            print("No se encontró el asunto del correo")
+                            continue
 
     mail.close()
 
@@ -177,8 +217,8 @@ def get_netflix_session_code(user_email: str):
                                 r'(\d{4})(?:\s|\n|$)', body)
 
                             if code:
-                                print(code[-1])
-                                return code[-1]
+                                print(code)
+                                return code[1]
 
                             else:
                                 return "No se encontró el código"

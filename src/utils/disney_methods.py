@@ -71,7 +71,7 @@ def get_code_email(user_email: str) -> str:
     mail.close()
 
 
-def introduce_credentials(user_email: str, disney_password: str, new_password: str):
+def introduce_credentials(user_email: str, new_password: str):
     driver = webdriver.Chrome()
 
     driver.get("https://www.disneyplus.com/identity/login/enter-email")
@@ -89,9 +89,11 @@ def introduce_credentials(user_email: str, disney_password: str, new_password: s
     submit_button.click()
 
     try:
-        time.sleep(15)
+
         first_input_box = driver.find_element(
             By.CSS_SELECTOR, 'div.passcode-key')
+
+        time.sleep(15)
 
         code_one = get_code_email(
             user_email=user_email)
@@ -118,13 +120,32 @@ def introduce_credentials(user_email: str, disney_password: str, new_password: s
             EC.presence_of_element_located((By.XPATH, '//*[@id="password"]'))
         )
 
-        password_input.send_keys(disney_password)
+        driver.get("https://www.disneyplus.com/identity/login/enter-passcode")
 
-        submit_button = WebDriverWait(driver, 5).until(
-            EC.element_to_be_clickable((By.CSS_SELECTOR, 'button.Button'))
+        time.sleep(15)
+
+        second_input_box = driver.find_element(
+            By.CSS_SELECTOR, 'div.passcode-key')
+
+        code_two = get_code_email(
+            user_email=user_email)
+
+        pyperclip.copy(code_two)
+
+        second_input_box.click()
+
+        action = ActionChains(driver)
+        action.key_down(Keys.CONTROL).send_keys(
+            'v').key_up(Keys.CONTROL).perform()
+
+        continue_button = WebDriverWait(driver, 5).until(
+            EC.element_to_be_clickable(
+                (By.CSS_SELECTOR, 'button[data-testid="continue-btn"]'))
         )
 
-        submit_button.click()
+        time.sleep(2)
+
+        continue_button.click()
 
         time.sleep(2)
 
@@ -147,7 +168,7 @@ def introduce_credentials(user_email: str, disney_password: str, new_password: s
     driver.get(
         "https://www.disneyplus.com/identity/update-credentials?updateType=ChangePassword")
 
-    time.sleep(20)
+    time.sleep(22)
 
     code = get_code_email(user_email=user_email)
 
@@ -180,6 +201,6 @@ def introduce_credentials(user_email: str, disney_password: str, new_password: s
 
     submit_button.click()
 
-    time.sleep(3)
+    time.sleep(2)
 
     driver.quit()

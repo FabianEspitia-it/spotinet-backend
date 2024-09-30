@@ -17,7 +17,7 @@ from src.models import Accounts
 
 def get_code_email_by_email(email: str) -> str:
 
-    time.sleep(5)
+    time.sleep(7)
 
     # email_password = db.query(Accounts).filter(
     # Accounts.email == email).first().email_password
@@ -28,42 +28,28 @@ def get_code_email_by_email(email: str) -> str:
     return get_code_email(user_email=email)
 
 
-def update_password_by_email(info: ChangePasswordSchema, db: Session) -> None:
+def update_password_by_email(info: ChangePasswordSchema) -> None:
 
-    account = db.query(Accounts).filter(
-        Accounts.email == info.email).first()
-
-    introduce_credentials(
-        user_email=info.email, disney_password=account.disney_password, new_password=info.new_password)
-
-    account.disney_password = info.new_password
-
-    db.commit()
-
-    db.refresh(account)
+    return introduce_credentials(
+        user_email=info.email, new_password=info.new_password)
 
 
-def get_temporal_access_code_by_email(email: str, db: Session):
+def get_temporal_access_code_by_email(email: str):
 
     EMAIL_SUBJECT = "Tu código de acceso temporal de Netflix".replace(" ", "")
 
     time.sleep(6)
 
-    account = db.query(Accounts).filter(Accounts.email == email).first()
-
-    return get_netflix_code_email(user_email=email, netflix_password=account.netflix_password, email_subject=EMAIL_SUBJECT)
+    return get_netflix_code_email(user_email=email, email_subject=EMAIL_SUBJECT)
 
 
-def get_home_code_by_email(email: str, db: Session) -> str:
+def get_home_code_by_email(email: str) -> str:
 
-    EMAIL_SUBJECT = "Importante: Cómo actualizar tu Hogar con Netflix".replace(
+    EMAIL_SUBJECT = "Importante:CómoactualizartuHogarconNetflix".replace(
         " ", "")
 
     time.sleep(6)
-
-    account = db.query(Accounts).filter(Accounts.email == email).first()
-
-    return get_netflix_code_email(user_email=email, netflix_password=account.netflix_password, email_subject=EMAIL_SUBJECT)
+    return get_netflix_code_email(user_email=email, email_subject=EMAIL_SUBJECT)
 
 
 def netflix_session_code_by_email(email: str) -> str:
