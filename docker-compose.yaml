@@ -1,4 +1,20 @@
 services: 
+  webdriver:
+    image: selenium/standalone-chrome:latest
+    restart: always
+    privileged: true
+    shm_size: 2g
+    hostname: chrome
+    ports:
+      - "7900:7900"
+      - "4317:4317"
+    healthcheck:
+      test: [ "CMD-SHELL", "curl -f http://localhost:4444 || exit 1" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
   api:
     build:
       context: .
@@ -11,3 +27,10 @@ services:
       - DISNEY_EMAIL=${DISNEY_EMAIL}
       - DISNEY_PASSWORD=${DISNEY_PASSWORD}
       - IMAP_SERVER=${IMAP_SERVER}
+      - WEBDRIVER_URL=${WEBDRIVER_URL}
+    depends_on:
+      webdriver:
+        condition: service_healthy
+
+
+  
