@@ -96,7 +96,7 @@ def introduce_credentials(user_email: str, new_password: str):
         first_input_box = wait.until(EC.presence_of_element_located(
             (By.CSS_SELECTOR, 'div.passcode-key')))
 
-        time.sleep(16)
+        time.sleep(18)
 
         code_one = get_code_email(
             user_email=user_email)
@@ -122,7 +122,7 @@ def introduce_credentials(user_email: str, new_password: str):
 
         driver.get("https://www.disneyplus.com/identity/login/enter-passcode")
 
-        time.sleep(16)
+        time.sleep(18)
 
         wait = WebDriverWait(driver, 4)
         second_input_box = wait.until(EC.presence_of_element_located(
@@ -169,7 +169,7 @@ def introduce_credentials(user_email: str, new_password: str):
     driver.get(
         "https://www.disneyplus.com/identity/update-credentials?updateType=ChangePassword")
 
-    time.sleep(16)
+    time.sleep(18)
 
     code = get_code_email(user_email=user_email)
 
