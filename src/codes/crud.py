@@ -12,7 +12,7 @@ from src.codes.schemas import ChangePasswordSchema
 
 def get_code_email_by_email(email: str) -> str:
 
-    time.sleep(7)
+    time.sleep(15)
 
     # email_password = db.query(Accounts).filter(
     # Accounts.email == email).first().email_password
@@ -33,7 +33,7 @@ def get_temporal_access_code_by_email(email: str):
 
     EMAIL_SUBJECT = "Tu código de acceso temporal de Netflix".replace(" ", "")
 
-    time.sleep(6)
+    time.sleep(8)
 
     return get_netflix_code_email(user_email=email, email_subject=EMAIL_SUBJECT)
 
@@ -43,7 +43,7 @@ def get_home_code_by_email(email: str) -> str:
     EMAIL_SUBJECT = "Importante:CómoactualizartuHogarconNetflix".replace(
         " ", "")
 
-    time.sleep(6)
+    time.sleep(8)
     return get_netflix_code_email(user_email=email, email_subject=EMAIL_SUBJECT)
 
 
