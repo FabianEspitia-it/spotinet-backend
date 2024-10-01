@@ -72,167 +72,138 @@ def get_code_email(user_email: str) -> str:
 
 
 def introduce_credentials(user_email: str, new_password: str):
+    driver = webdriver.Chrome()
 
-    webdriver_url = os.getenv("WEBDRIVER_URL")
+    driver.get("https://www.disneyplus.com/identity/login/enter-email")
 
-    if not webdriver_url:
-        raise ValueError("WEBDRIVER_URL environment variable is not set")
+    email_element = WebDriverWait(driver, 5).until(
+        EC.presence_of_element_located((By.XPATH, "//*[@id='email']"))
+    )
 
-    options = webdriver.ChromeOptions()
+    email_element.send_keys(user_email)
 
-    options.headless = True
-    options.add_argument("--no-sandbox")
-    options.add_argument("--headless")
-    options.add_argument("--disable-gpu")
+    submit_button = WebDriverWait(driver, 5).until(
+        EC.element_to_be_clickable(
+            (By.CSS_SELECTOR, 'button[data-testid="continue-btn"]'))
+    )
+    submit_button.click()
 
     try:
-        driver = webdriver.Remote(
-            command_executor=webdriver_url, options=options, )
 
-        driver.get("https://www.disneyplus.com/identity/login/enter-email")
+        print("entramos")
 
-        email_element = WebDriverWait(driver, 5).until(
-            EC.presence_of_element_located((By.XPATH, "//*[@id='email']"))
-        )
+        wait = WebDriverWait(driver, 4)
+        first_input_box = wait.until(EC.presence_of_element_located(
+            (By.CSS_SELECTOR, 'div.passcode-key')))
 
-        email_element.send_keys(user_email)
+        time.sleep(16)
 
-        submit_button = WebDriverWait(driver, 5).until(
+        code_one = get_code_email(
+            user_email=user_email)
+
+        pyperclip.copy(code_one)
+
+        first_input_box.click()
+
+        action = ActionChains(driver)
+        action.key_down(Keys.CONTROL).send_keys(
+            'v').key_up(Keys.CONTROL).perform()
+
+        continue_button = WebDriverWait(driver, 5).until(
             EC.element_to_be_clickable(
                 (By.CSS_SELECTOR, 'button[data-testid="continue-btn"]'))
         )
-        submit_button.click()
 
-        try:
+        time.sleep(2)
 
-            print("Nos rompimos 0.1")
+        continue_button.click()
 
-            first_input_box = driver.find_element(
-                By.CSS_SELECTOR, 'div.passcode-key')
+    except:
 
-            print("Nos rompimos 0")
+        driver.get("https://www.disneyplus.com/identity/login/enter-passcode")
 
-            time.sleep(15)
+        time.sleep(16)
 
-            code_one = get_code_email(
-                user_email=user_email)
+        wait = WebDriverWait(driver, 4)
+        second_input_box = wait.until(EC.presence_of_element_located(
+            (By.CSS_SELECTOR, 'div.passcode-key')))
 
-            pyperclip.copy(code_one)
+        code_two = get_code_email(
+            user_email=user_email)
 
-            first_input_box.click()
+        pyperclip.copy(code_two)
 
-            action = ActionChains(driver)
-            action.key_down(Keys.CONTROL).send_keys(
-                'v').key_up(Keys.CONTROL).perform()
+        second_input_box.click()
 
-            continue_button = WebDriverWait(driver, 5).until(
-                EC.element_to_be_clickable(
-                    (By.CSS_SELECTOR, 'button[data-testid="continue-btn"]'))
-            )
+        action = ActionChains(driver)
+        action.key_down(Keys.CONTROL).send_keys(
+            'v').key_up(Keys.CONTROL).perform()
 
-            time.sleep(2)
+        continue_button = WebDriverWait(driver, 5).until(
+            EC.element_to_be_clickable(
+                (By.CSS_SELECTOR, 'button[data-testid="continue-btn"]'))
+        )
 
-            continue_button.click()
+        time.sleep(2)
 
-        except:
-            password_input = WebDriverWait(driver, 5).until(
-                EC.presence_of_element_located(
-                    (By.XPATH, '//*[@id="password"]'))
-            )
+        continue_button.click()
 
-            print("Nos rompimos 1")
+        time.sleep(2)
 
-            driver.get(
-                "https://www.disneyplus.com/identity/login/enter-passcode")
+    time.sleep(10)
 
-            print("Nos rompimos 2")
+    driver.get(
+        "https://www.disneyplus.com/es-419/commerce/account?pinned=true")
 
-            time.sleep(15)
+    time.sleep(2)
 
-            print("Nos rompimos 3")
+    user_element = WebDriverWait(driver, 5).until(
+        EC.presence_of_element_located(
+            (By.CSS_SELECTOR, '[data-testid="selected-avatar-image"]'))
+    )
 
-            second_input_box = driver.find_element(
-                By.CSS_SELECTOR, 'div.passcode-key')
+    user_element.click()
 
-            code_two = get_code_email(
-                user_email=user_email)
+    time.sleep(2)
 
-            pyperclip.copy(code_two)
+    driver.get(
+        "https://www.disneyplus.com/identity/update-credentials?updateType=ChangePassword")
 
-            second_input_box.click()
+    time.sleep(16)
 
-            action = ActionChains(driver)
-            action.key_down(Keys.CONTROL).send_keys(
-                'v').key_up(Keys.CONTROL).perform()
+    code = get_code_email(user_email=user_email)
 
-            continue_button = WebDriverWait(driver, 5).until(
-                EC.element_to_be_clickable(
-                    (By.CSS_SELECTOR, 'button[data-testid="continue-btn"]'))
-            )
+    pyperclip.copy(code)
 
-            time.sleep(2)
+    wait = WebDriverWait(driver, 4)
+    third_input_box = wait.until(EC.presence_of_element_located(
+        (By.CSS_SELECTOR, 'div.passcode-key')))
 
-            continue_button.click()
+    third_input_box.click()
 
-            time.sleep(2)
+    action = ActionChains(driver)
+    action.key_down(Keys.CONTROL).send_keys('v').key_up(Keys.CONTROL).perform()
 
-            time.sleep(10)
+    continue_button = WebDriverWait(driver, 5).until(
+        EC.element_to_be_clickable(
+            (By.CSS_SELECTOR, 'button[data-testid="continue-btn"]'))
+    )
 
-            driver.get(
-                "https://www.disneyplus.com/es-419/commerce/account?pinned=true")
+    continue_button.click()
 
-            time.sleep(2)
+    time.sleep(1)
 
-            user_element = WebDriverWait(driver, 5).until(
-                EC.presence_of_element_located(
-                    (By.CSS_SELECTOR, '[data-testid="selected-avatar-image"]'))
-            )
+    password_input = driver.find_element(By.ID, "password")
 
-            user_element.click()
+    password_input.send_keys(new_password)
 
-            time.sleep(2)
+    submit_button = WebDriverWait(driver, 5).until(
+        EC.element_to_be_clickable(
+            (By.CSS_SELECTOR, 'button[data-testid="continue-btn"]'))
+    )
 
-            driver.get(
-                "https://www.disneyplus.com/identity/update-credentials?updateType=ChangePassword")
+    submit_button.click()
 
-            time.sleep(22)
+    time.sleep(2)
 
-            code = get_code_email(user_email=user_email)
-
-            pyperclip.copy(code)
-
-            div_element = driver.find_element(
-                By.CSS_SELECTOR, 'div.passcode-key')
-
-            div_element.click()
-
-            action = ActionChains(driver)
-            action.key_down(Keys.CONTROL).send_keys(
-                'v').key_up(Keys.CONTROL).perform()
-
-            continue_button = WebDriverWait(driver, 5).until(
-                EC.element_to_be_clickable(
-                    (By.CSS_SELECTOR, 'button[data-testid="continue-btn"]'))
-            )
-
-            continue_button.click()
-
-            time.sleep(1)
-
-            password_input = driver.find_element(By.ID, "password")
-
-            password_input.send_keys(new_password)
-
-            submit_button = WebDriverWait(driver, 5).until(
-                EC.element_to_be_clickable(
-                    (By.CSS_SELECTOR, 'button[data-testid="continue-btn"]'))
-            )
-
-            submit_button.click()
-
-            time.sleep(2)
-
-    except Exception as e:
-        print(f"An error occurred: {e}")
-    finally:
-        driver.quit()
+    driver.quit()

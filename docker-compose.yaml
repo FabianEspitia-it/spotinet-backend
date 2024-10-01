@@ -1,15 +1,17 @@
-services: 
+services:
   webdriver:
     image: selenium/standalone-chrome:latest
     restart: always
     privileged: true
     shm_size: 2g
     hostname: chrome
+    environment:
+      - SE_ENABLE_TRACING=false
     ports:
       - "7900:7900"
       - "4317:4317"
     healthcheck:
-      test: [ "CMD-SHELL", "curl -f http://localhost:4444 || exit 1" ]
+      test: ["CMD-SHELL", "curl -f http://localhost:4444 || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -31,6 +33,3 @@ services:
     depends_on:
       webdriver:
         condition: service_healthy
-
-
-  
