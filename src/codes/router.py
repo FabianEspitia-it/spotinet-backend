@@ -92,6 +92,9 @@ def get_home_code(email: str) -> JSONResponse:
 
     try:
         link = get_home_code_by_email(email=email)
+
+        if not link:
+            raise HTTPException(status_code=404, detail="Link not found")
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
