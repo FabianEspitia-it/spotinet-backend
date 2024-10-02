@@ -76,7 +76,15 @@ def get_netflix_code_email(user_email: str, email_subject: str) -> str:
                             match = re.search(pattern, body)
 
                             if match:
+
                                 link = match.group(0).replace(">", "")
+
+                                return link
+
+                            else:
+                                return 'No se encontró ningún link'
+
+                                """
 
                                 driver = webdriver.Chrome()
 
@@ -159,8 +167,7 @@ def get_netflix_code_email(user_email: str, email_subject: str) -> str:
 
                                     return "Process completed"
 
-                            else:
-                                return 'No se encontró ningún link'
+                                """
 
                         else:
                             print("No se encontró el asunto del correo")

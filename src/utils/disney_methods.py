@@ -71,6 +71,7 @@ def get_code_email(user_email: str) -> str:
     mail.close()
 
 
+"""
 def introduce_credentials(user_email: str, new_password: str):
     driver = webdriver.Chrome()
 
@@ -207,3 +208,4 @@ def introduce_credentials(user_email: str, new_password: str):
     time.sleep(2)
 
     driver.quit()
+"""

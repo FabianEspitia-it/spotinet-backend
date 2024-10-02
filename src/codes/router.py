@@ -42,9 +42,10 @@ def get_code_email(email: str) -> JSONResponse:
     }, status_code=status.HTTP_200_OK)
 
 
+"""
 @codes_router.patch("/disney/update_password", tags=["disney_codes"])
 def update_password(info: ChangePasswordSchema) -> JSONResponse:
-    """
+    
     Update the password associated with an email in the database.
 
     This function updates the password associated with the provided email in the database.
@@ -57,7 +58,7 @@ def update_password(info: ChangePasswordSchema) -> JSONResponse:
 
     Returns:
         JSONResponse: A JSON response indicating the password was updated successfully.
-    """
+    
     try:
         update_password_by_email(info=info)
 
@@ -67,6 +68,7 @@ def update_password(info: ChangePasswordSchema) -> JSONResponse:
     return JSONResponse(content={
         "message": "Password updated successfully",
     }, status_code=status.HTTP_200_OK)
+"""
 
 
 @codes_router.get("/netflix/temporal_access/{email}", tags=["netflix_codes"])
@@ -74,26 +76,26 @@ def get_temporal_access(email: str) -> JSONResponse:
 
     try:
 
-        code = get_temporal_access_code_by_email(email=email)
+        link = get_temporal_access_code_by_email(email=email)
 
-        if not code:
-            raise HTTPException(status_code=404, detail="Code not found")
+        if not link:
+            raise HTTPException(status_code=404, detail="Link not found")
 
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
-    return JSONResponse(content={"code": code}, status_code=status.HTTP_200_OK)
+    return JSONResponse(content={"link": link}, status_code=status.HTTP_200_OK)
 
 
 @codes_router.get("/netflix/home_code/{email}", tags=["netflix_codes"])
 def get_home_code(email: str) -> JSONResponse:
 
     try:
-        message = get_home_code_by_email(email=email)
+        link = get_home_code_by_email(email=email)
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
-    return JSONResponse(content={"content": message}, status_code=status.HTTP_200_OK)
+    return JSONResponse(content={"link": link}, status_code=status.HTTP_200_OK)
 
 
 @codes_router.get("/netflix/session_code/{email}", tags=["netflix_codes"])
