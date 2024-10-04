@@ -51,7 +51,7 @@ def get_code_email(user_email: str) -> str:
                 new_subject = subject.replace(" ", "").replace(
                     "FW:", "").replace("RV:", "").replace("هدایت:", "")
 
-                if "Tu código de acceso único para Disney+".replace(" ", "") in new_subject or "Your one-time passcode for Disney+".replace(" ", "") in new_subject:
+                if ("Tu código de acceso único para Disney+".replace(" ", "") in new_subject) or ("Your one-time passcode for Disney+".replace(" ", "") in new_subject) or ("Votre code d'accès à usage unique pour Disney+".replace(" ", "") in new_subject):
 
                     if mensaje_correo.is_multipart():
                         for part in mensaje_correo.walk():
