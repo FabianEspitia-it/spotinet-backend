@@ -32,39 +32,104 @@ def get_code_email(user_email: str) -> str:
 
         message_ids = messages[0].split()
 
-        status, mensaje = mail.fetch(message_ids[-1], "(RFC822)")
+        if message_ids != []:
 
-        for respuesta in mensaje:
+            status, mensaje = mail.fetch(message_ids[-1], "(RFC822)")
 
-            if isinstance(respuesta, tuple):
+            for respuesta in mensaje:
 
-                mensaje_correo = email.message_from_bytes(respuesta[1])
+                if isinstance(respuesta, tuple):
 
-                subject, encoding = decode_header(
-                    mensaje_correo["Subject"])[0]
-                if isinstance(subject, bytes):
-                    subject = subject.decode(
-                        encoding if encoding else "utf-8")
+                    email_message = email.message_from_bytes(respuesta[1])
 
-                new_subject = subject.replace(" ", "").replace(
-                    "FW:", "").replace("RV:", "").replace("هدایت:", "")
+                    subject, encoding = decode_header(
+                        email_message["Subject"])[0]
+                    if isinstance(subject, bytes):
+                        subject = subject.decode(
+                            encoding if encoding else "utf-8")
 
-                if ("Tu código de acceso único para Disney+".replace(" ", "") in new_subject) or ("Your one-time passcode for Disney+".replace(" ", "") in new_subject) or ("Votre code d'accès à usage unique pour Disney+".replace(" ", "") in new_subject):
+                    new_subject = subject.replace(" ", "").replace(
+                        "FW:", "").replace("RV:", "").replace("هدایت:", "")
 
-                    if mensaje_correo.is_multipart():
-                        for part in mensaje_correo.walk():
-                            if part.get_content_type() == "text/plain":
-                                body = part.get_payload(decode=True).decode(
-                                    "utf-8", errors="ignore")
-                    else:
-                        body = mensaje_correo.get_payload(
-                            decode=True).decode("utf-8", errors="ignore")
+                    if ("Tu código de acceso único para Disney+".replace(" ", "") in new_subject) or ("Your one-time passcode for Disney+".replace(" ", "") in new_subject) or ("Votre code d'accès à usage unique pour Disney+".replace(" ", "") in new_subject):
 
-                    code = re.findall(r'(\d{6})(?:\s|\n|$)', body)
+                        if email_message.is_multipart():
+                            for part in email_message.walk():
+                                if part.get_content_type() == "text/plain":
+                                    body = part.get_payload(decode=True).decode(
+                                        "utf-8", errors="ignore")
+                        else:
+                            body = email_message.get_payload(
+                                decode=True).decode("utf-8", errors="ignore")
 
-                    if code:
-                        print(f"Código: {code[-1]}")
-                        return code[-1]
+                        code = re.findall(r'(\d{6})(?:\s|\n|$)', body)
+
+                        if code:
+                            print(f"Código: {code[-1]}")
+                            return code[-1]
+
+        else:
+            status, messages = mail.search(
+                None, '(FROM "disneyplus@mail.disneyplus.com")')
+
+            counter: int = 0
+
+            if status == "OK":
+
+                message_ids = messages[0].split()
+
+                for msg_id in message_ids[::-1]:
+
+                    status, mensaje = mail.fetch(msg_id, "(RFC822)")
+
+                    if status == "OK":
+
+                        for respuesta in mensaje:
+
+                            if isinstance(respuesta, tuple):
+
+                                email_message = email.message_from_bytes(
+                                    respuesta[1])
+
+                                to_email = email_message.get("To")
+
+                                print(to_email)
+
+                                if to_email.lower().strip().replace("<", "").replace(">", "") != user_email.lower().strip():
+                                    print(f"El correo no fue enviado a {
+                                        user_email}")
+                                    counter += 1
+
+                                    if counter == 10:
+                                        return None
+                                    continue
+
+                                subject, encoding = decode_header(
+                                    email_message["Subject"])[0]
+                                if isinstance(subject, bytes):
+                                    subject = subject.decode(
+                                        encoding if encoding else "utf-8")
+
+                                new_subject = subject.replace(" ", "").replace(
+                                    "FW:", "").replace("RV:", "").replace("هدایت:", "")
+
+                                if ("Tu código de acceso único para Disney+".replace(" ", "") in new_subject) or ("Your one-time passcode for Disney+".replace(" ", "") in new_subject) or ("Votre code d'accès à usage unique pour Disney+".replace(" ", "") in new_subject):
+
+                                    if email_message.is_multipart():
+                                        for part in email_message.walk():
+                                            if part.get_content_type() == "text/plain":
+                                                body = part.get_payload(decode=True).decode(
+                                                    "utf-8", errors="ignore")
+                                    else:
+                                        body = email_message.get_payload(
+                                            decode=True).decode("utf-8", errors="ignore")
+
+                                    code = re.findall(
+                                        r'(\d{6})(?:\s|\n|$)', body)
+
+                                    if code:
+                                        print(f"Código: {code[-1]}")
+                                        return code[-1]
 
     mail.close()
 

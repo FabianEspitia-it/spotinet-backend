@@ -33,62 +33,143 @@ def get_netflix_code_email(user_email: str, email_subject: str) -> str:
 
         message_ids = messages[0].split()
 
-        for msg_id in message_ids[::-1]:
-            status, mensaje = mail.fetch(msg_id, "(RFC822)")
+        if message_ids != []:
+
+            for msg_id in message_ids[::-1]:
+
+                status, mensaje = mail.fetch(msg_id, "(RFC822)")
+
+                if status == "OK":
+                    for respuesta in mensaje:
+                        if isinstance(respuesta, tuple):
+                            email_message = email.message_from_bytes(
+                                respuesta[1])
+
+                            subject, encoding = decode_header(
+                                email_message["Subject"])[0]
+                            if isinstance(subject, bytes):
+                                subject = subject.decode(
+                                    encoding if encoding else "utf-8")
+
+                            new_subject: str = subject.replace(
+                                " ", "").replace("RV:", "").replace("FW:", "").replace("هدایت:", "")
+
+                            print(new_subject)
+                            print(email_subject)
+
+                            if email_subject in new_subject:
+
+                                if email_message.is_multipart():
+                                    for part in email_message.walk():
+                                        if part.get_content_type() == "text/plain":
+                                            body = part.get_payload(decode=True).decode(
+                                                "utf-8", errors="ignore")
+                                else:
+                                    body = email_message.get_payload(
+                                        decode=True).decode("utf-8", errors="ignore")
+
+                                print(body)
+
+                                pattern = None
+
+                                if email_subject == "Tu código de acceso temporal de Netflix".replace(" ", ""):
+
+                                    pattern = r'https://www\.netflix\.com/account/travel/verify\?nftoken=[\w-]+.*'
+                                else:
+                                    pattern = r'https://www\.netflix\.com/account/update-primary-location\?nftoken=[\w\+\/-]+.*'
+
+                                match = re.search(pattern, body)
+
+                                if match:
+
+                                    link = match.group(0).replace(">", "")
+
+                                    return link
+
+                                else:
+                                    return 'No se encontró ningún link'
+
+                            else:
+                                print("No se encontró el asunto del correo")
+                                continue
+        else:
+            status, messages = mail.search(
+                None, '(FROM "info@account.netflix.com")')
+
+            counter: int = 0
 
             if status == "OK":
-                for respuesta in mensaje:
-                    if isinstance(respuesta, tuple):
-                        mensaje_correo = email.message_from_bytes(
-                            respuesta[1])
 
-                        subject, encoding = decode_header(
-                            mensaje_correo["Subject"])[0]
-                        if isinstance(subject, bytes):
-                            subject = subject.decode(
-                                encoding if encoding else "utf-8")
+                message_ids = messages[0].split()
 
-                        new_subject: str = subject.replace(
-                            " ", "").replace("RV:", "").replace("FW:", "").replace("هدایت:", "")
+                for msg_id in message_ids[::-1]:
 
-                        print(new_subject)
-                        print(email_subject)
+                    status, mensaje = mail.fetch(msg_id, "(RFC822)")
 
-                        if email_subject in new_subject:
+                    if status == "OK":
+                        for respuesta in mensaje:
+                            if isinstance(respuesta, tuple):
+                                email_message = email.message_from_bytes(
+                                    respuesta[1])
 
-                            if mensaje_correo.is_multipart():
-                                for part in mensaje_correo.walk():
-                                    if part.get_content_type() == "text/plain":
-                                        body = part.get_payload(decode=True).decode(
-                                            "utf-8", errors="ignore")
-                            else:
-                                body = mensaje_correo.get_payload(
-                                    decode=True).decode("utf-8", errors="ignore")
+                                to_email = email_message.get("To")
 
-                            print(body)
+                                if to_email.lower().strip().replace("<", "").replace(">", "") != user_email.lower().strip():
+                                    print(f"El correo no fue enviado a {
+                                          user_email}")
+                                    counter += 1
 
-                            pattern = None
+                                    if counter == 10:
+                                        return None
+                                    continue
 
-                            if email_subject == "Tu código de acceso temporal de Netflix".replace(" ", ""):
+                                subject, encoding = decode_header(
+                                    email_message["Subject"])[0]
+                                if isinstance(subject, bytes):
+                                    subject = subject.decode(
+                                        encoding if encoding else "utf-8")
 
-                                pattern = r'https://www\.netflix\.com/account/travel/verify\?nftoken=[\w-]+.*'
-                            else:
-                                pattern = r'https://www\.netflix\.com/account/update-primary-location\?nftoken=[\w\+\/-]+.*'
+                                new_subject: str = subject.replace(
+                                    " ", "").replace("RV:", "").replace("FW:", "").replace("هدایت:", "")
 
-                            match = re.search(pattern, body)
+                                print(new_subject)
+                                print(email_subject)
 
-                            if match:
+                                if email_subject in new_subject:
 
-                                link = match.group(0).replace(">", "")
+                                    if email_message.is_multipart():
+                                        for part in email_message.walk():
+                                            if part.get_content_type() == "text/plain":
+                                                body = part.get_payload(decode=True).decode(
+                                                    "utf-8", errors="ignore")
+                                    else:
+                                        body = email_message.get_payload(
+                                            decode=True).decode("utf-8", errors="ignore")
 
-                                return link
+                                    print(body)
 
-                            else:
-                                return 'No se encontró ningún link'
+                                    pattern = None
 
-                        else:
-                            print("No se encontró el asunto del correo")
-                            continue
+                                    if email_subject == "Tu código de acceso temporal de Netflix".replace(" ", ""):
+
+                                        pattern = r'https://www\.netflix\.com/account/travel/verify\?nftoken=[\w-]+.*'
+                                    else:
+                                        pattern = r'https://www\.netflix\.com/account/update-primary-location\?nftoken=[\w\+\/-]+.*'
+
+                                    match = re.search(pattern, body)
+
+                                    if match:
+
+                                        link = match.group(0).replace(">", "")
+
+                                        return link
+
+                                    else:
+                                        return 'No se encontró ningún link'
+
+                                else:
+                                    print("No se encontró el asunto del correo")
+                                    continue
 
     mail.close()
 
@@ -107,45 +188,110 @@ def get_netflix_session_code(user_email: str):
 
         message_ids = messages[0].split()
 
-        for msg_id in message_ids[::-1]:
-            status, mensaje = mail.fetch(msg_id, "(RFC822)")
+        if message_ids != []:
+
+            for msg_id in message_ids[::-1]:
+                status, mensaje = mail.fetch(msg_id, "(RFC822)")
+
+                if status == "OK":
+                    for respuesta in mensaje:
+                        if isinstance(respuesta, tuple):
+                            email_message = email.message_from_bytes(
+                                respuesta[1])
+
+                            subject, encoding = decode_header(
+                                email_message["Subject"])[0]
+                            if isinstance(subject, bytes):
+                                subject = subject.decode(
+                                    encoding if encoding else "utf-8")
+
+                            new_subject: str = subject.replace(
+                                " ", "").replace("RV:", "").replace("FW:", "")
+
+                            if "Tu código de inicio de sesión".replace(" ", "") in new_subject:
+
+                                if email_message.is_multipart():
+                                    for part in email_message.walk():
+                                        if part.get_content_type() == "text/plain":
+                                            body = part.get_payload(decode=True).decode(
+                                                "utf-8", errors="ignore")
+                                else:
+                                    body = email_message.get_payload(
+                                        decode=True).decode("utf-8", errors="ignore")
+
+                                print(body)
+
+                                code = re.findall(
+                                    r'(\d{4})(?:\s|\n|$)', body)
+
+                                if code:
+                                    print(code)
+                                    return code[1]
+
+                                else:
+                                    print("No se encontró el código")
+
+        else:
+            status, messages = mail.search(
+                None, '(FROM "info@account.netflix.com")')
+
+            counter: int = 0
 
             if status == "OK":
-                for respuesta in mensaje:
-                    if isinstance(respuesta, tuple):
-                        mensaje_correo = email.message_from_bytes(
-                            respuesta[1])
 
-                        subject, encoding = decode_header(
-                            mensaje_correo["Subject"])[0]
-                        if isinstance(subject, bytes):
-                            subject = subject.decode(
-                                encoding if encoding else "utf-8")
+                message_ids = messages[0].split()
 
-                        new_subject: str = subject.replace(
-                            " ", "").replace("RV:", "").replace("FW:", "")
+                for msg_id in message_ids[::-1]:
 
-                        if "Tu código de inicio de sesión".replace(" ", "") in new_subject:
+                    status, mensaje = mail.fetch(msg_id, "(RFC822)")
 
-                            if mensaje_correo.is_multipart():
-                                for part in mensaje_correo.walk():
-                                    if part.get_content_type() == "text/plain":
-                                        body = part.get_payload(decode=True).decode(
-                                            "utf-8", errors="ignore")
-                            else:
-                                body = mensaje_correo.get_payload(
-                                    decode=True).decode("utf-8", errors="ignore")
+                    if status == "OK":
+                        for respuesta in mensaje:
+                            if isinstance(respuesta, tuple):
+                                email_message = email.message_from_bytes(
+                                    respuesta[1])
 
-                            print(body)
+                                to_email = email_message.get("To")
 
-                            code = re.findall(
-                                r'(\d{4})(?:\s|\n|$)', body)
+                                if to_email.lower().strip().replace("<", "").replace(">", "") != user_email.lower().strip():
+                                    print(f"El correo no fue enviado a {
+                                        user_email}")
+                                    counter += 1
 
-                            if code:
-                                print(code)
-                                return code[1]
+                                    if counter == 10:
+                                        return None
+                                    continue
 
-                            else:
-                                print("No se encontró el código")
+                                subject, encoding = decode_header(
+                                    email_message["Subject"])[0]
+                                if isinstance(subject, bytes):
+                                    subject = subject.decode(
+                                        encoding if encoding else "utf-8")
+
+                                new_subject: str = subject.replace(
+                                    " ", "").replace("RV:", "").replace("FW:", "")
+
+                                if "Tu código de inicio de sesión".replace(" ", "") in new_subject:
+
+                                    if email_message.is_multipart():
+                                        for part in email_message.walk():
+                                            if part.get_content_type() == "text/plain":
+                                                body = part.get_payload(decode=True).decode(
+                                                    "utf-8", errors="ignore")
+                                    else:
+                                        body = email_message.get_payload(
+                                            decode=True).decode("utf-8", errors="ignore")
+
+                                    print(body)
+
+                                    code = re.findall(
+                                        r'(\d{4})(?:\s|\n|$)', body)
+
+                                    if code:
+                                        print(code)
+                                        return code[0]
+
+                                    else:
+                                        print("No se encontró el código")
 
     mail.close()
