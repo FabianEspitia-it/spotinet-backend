@@ -96,7 +96,7 @@ def get_netflix_code_email(user_email: str, email_subject: str) -> str:
             status, messages = mail.search(
                 None, '(FROM "info@account.netflix.com")')
 
-            counter: int = 0
+            counter = 0
 
             if status == "OK":
 
@@ -235,7 +235,7 @@ def get_netflix_session_code(user_email: str):
             status, messages = mail.search(
                 None, '(FROM "info@account.netflix.com")')
 
-            counter: int = 0
+            counter = 0
 
             if status == "OK":
 

@@ -72,7 +72,7 @@ def get_code_email(user_email: str) -> str:
             status, messages = mail.search(
                 None, '(FROM "disneyplus@mail.disneyplus.com")')
 
-            counter: int = 0
+            counter = 0
 
             if status == "OK":
 
