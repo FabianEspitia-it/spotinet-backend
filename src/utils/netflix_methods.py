@@ -115,8 +115,6 @@ def get_netflix_code_email(user_email: str, email_subject: str) -> str:
                                 to_email = email_message.get("To")
 
                                 if to_email.lower().strip().replace("<", "").replace(">", "") != user_email.lower().strip():
-                                    print(f"El correo no fue enviado a {
-                                          user_email}")
                                     counter += 1
 
                                     if counter == 10:
@@ -254,8 +252,6 @@ def get_netflix_session_code(user_email: str):
                                 to_email = email_message.get("To")
 
                                 if to_email.lower().strip().replace("<", "").replace(">", "") != user_email.lower().strip():
-                                    print(f"El correo no fue enviado a {
-                                        user_email}")
                                     counter += 1
 
                                     if counter == 10:
