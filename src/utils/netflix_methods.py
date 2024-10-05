@@ -158,7 +158,8 @@ def get_netflix_code_email(user_email: str, email_subject: str) -> str:
 
                                     if match:
 
-                                        link = match.group(0).replace(">", "")
+                                        link = match.group(0).replace(
+                                            ">", "").replace("]", "")
 
                                         return link
 
