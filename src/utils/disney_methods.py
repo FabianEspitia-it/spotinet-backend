@@ -70,7 +70,7 @@ def get_code_email(user_email: str) -> str:
 
         else:
             status, messages = mail.search(
-                None, '(FROM "disneyplus@mail.disneyplus.com")')
+                None, '(HEADER From "Disney+")')
 
             counter = 0
 
