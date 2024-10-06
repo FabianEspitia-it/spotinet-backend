@@ -4,18 +4,10 @@ from src.utils.disney_methods import get_code_email
 
 from src.utils.netflix_methods import *
 
-from src.codes.schemas import ChangePasswordSchema
-
 
 def get_code_email_by_email(email: str) -> str:
 
     time.sleep(17)
-
-    # email_password = db.query(Accounts).filter(
-    # Accounts.email == email).first().email_password
-
-    # if not email_password:
-    # raise HTTPException(status_code=404, detail="Email not found")
 
     return get_code_email(user_email=email)
 

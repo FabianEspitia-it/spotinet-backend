@@ -3,19 +3,7 @@ import imaplib
 import email
 import re
 
-import time
-
 from email.header import decode_header
-
-import pyperclip
-from selenium import webdriver
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
-
-
-from selenium.webdriver.common.keys import Keys
-from selenium.webdriver.common.action_chains import ActionChains
 
 
 def get_netflix_code_email(user_email: str, email_subject: str) -> str:
@@ -31,19 +19,19 @@ def get_netflix_code_email(user_email: str, email_subject: str) -> str:
 
     if status == "OK":
 
-        message_ids = messages[0].split()
+        message_ids: list[str] = messages[0].split()
 
         if message_ids != []:
 
             for msg_id in message_ids[::-1]:
 
-                status, mensaje = mail.fetch(msg_id, "(RFC822)")
+                status, message = mail.fetch(msg_id, "(RFC822)")
 
                 if status == "OK":
-                    for respuesta in mensaje:
-                        if isinstance(respuesta, tuple):
+                    for response in message:
+                        if isinstance(response, tuple):
                             email_message = email.message_from_bytes(
-                                respuesta[1])
+                                response[1])
 
                             subject, encoding = decode_header(
                                 email_message["Subject"])[0]
@@ -53,9 +41,6 @@ def get_netflix_code_email(user_email: str, email_subject: str) -> str:
 
                             new_subject: str = subject.replace(
                                 " ", "").replace("RV:", "").replace("FW:", "").replace("هدایت:", "")
-
-                            print(new_subject)
-                            print(email_subject)
 
                             if email_subject in new_subject:
 
@@ -67,8 +52,6 @@ def get_netflix_code_email(user_email: str, email_subject: str) -> str:
                                 else:
                                     body = email_message.get_payload(
                                         decode=True).decode("utf-8", errors="ignore")
-
-                                print(body)
 
                                 pattern = None
 
@@ -96,7 +79,7 @@ def get_netflix_code_email(user_email: str, email_subject: str) -> str:
             status, messages = mail.search(
                 None, '(FROM "info@account.netflix.com")')
 
-            counter = 0
+            counter: int = 0
 
             if status == "OK":
 
@@ -104,17 +87,18 @@ def get_netflix_code_email(user_email: str, email_subject: str) -> str:
 
                 for msg_id in message_ids[::-1]:
 
-                    status, mensaje = mail.fetch(msg_id, "(RFC822)")
+                    status, message = mail.fetch(msg_id, "(RFC822)")
 
                     if status == "OK":
-                        for respuesta in mensaje:
-                            if isinstance(respuesta, tuple):
+                        for response in message:
+                            if isinstance(response, tuple):
                                 email_message = email.message_from_bytes(
-                                    respuesta[1])
+                                    response[1])
 
-                                to_email = email_message.get("To")
+                                to_email: str = email_message.get("To").lower(
+                                ).strip().replace("<", "").replace(">", "")
 
-                                if to_email.lower().strip().replace("<", "").replace(">", "") != user_email.lower().strip():
+                                if to_email != user_email.lower().strip():
                                     counter += 1
 
                                     if counter == 10:
@@ -130,9 +114,6 @@ def get_netflix_code_email(user_email: str, email_subject: str) -> str:
                                 new_subject: str = subject.replace(
                                     " ", "").replace("RV:", "").replace("FW:", "").replace("هدایت:", "")
 
-                                print(new_subject)
-                                print(email_subject)
-
                                 if email_subject in new_subject:
 
                                     if email_message.is_multipart():
@@ -143,8 +124,6 @@ def get_netflix_code_email(user_email: str, email_subject: str) -> str:
                                     else:
                                         body = email_message.get_payload(
                                             decode=True).decode("utf-8", errors="ignore")
-
-                                    print(body)
 
                                     pattern = None
 
@@ -185,18 +164,18 @@ def get_netflix_session_code(user_email: str):
 
     if status == "OK":
 
-        message_ids = messages[0].split()
+        message_ids: list[str] = messages[0].split()
 
         if message_ids != []:
 
             for msg_id in message_ids[::-1]:
-                status, mensaje = mail.fetch(msg_id, "(RFC822)")
+                status, message = mail.fetch(msg_id, "(RFC822)")
 
                 if status == "OK":
-                    for respuesta in mensaje:
-                        if isinstance(respuesta, tuple):
+                    for response in message:
+                        if isinstance(response, tuple):
                             email_message = email.message_from_bytes(
-                                respuesta[1])
+                                response[1])
 
                             subject, encoding = decode_header(
                                 email_message["Subject"])[0]
@@ -218,8 +197,6 @@ def get_netflix_session_code(user_email: str):
                                     body = email_message.get_payload(
                                         decode=True).decode("utf-8", errors="ignore")
 
-                                print(body)
-
                                 code = re.findall(
                                     r'(\d{4})(?:\s|\n|$)', body)
 
@@ -234,25 +211,26 @@ def get_netflix_session_code(user_email: str):
             status, messages = mail.search(
                 None, '(FROM "info@account.netflix.com")')
 
-            counter = 0
+            counter: int = 0
 
             if status == "OK":
 
-                message_ids = messages[0].split()
+                message_ids: list[str] = messages[0].split()
 
                 for msg_id in message_ids[::-1]:
 
-                    status, mensaje = mail.fetch(msg_id, "(RFC822)")
+                    status, message = mail.fetch(msg_id, "(RFC822)")
 
                     if status == "OK":
-                        for respuesta in mensaje:
-                            if isinstance(respuesta, tuple):
+                        for response in message:
+                            if isinstance(response, tuple):
                                 email_message = email.message_from_bytes(
-                                    respuesta[1])
+                                    response[1])
 
-                                to_email = email_message.get("To")
+                                to_email: str = email_message.get("To").lower(
+                                ).strip().replace("<", "").replace(">", "")
 
-                                if to_email.lower().strip().replace("<", "").replace(">", "") != user_email.lower().strip():
+                                if to_email != user_email.lower().strip():
                                     counter += 1
 
                                     if counter == 10:
@@ -278,8 +256,6 @@ def get_netflix_session_code(user_email: str):
                                     else:
                                         body = email_message.get_payload(
                                             decode=True).decode("utf-8", errors="ignore")
-
-                                    print(body)
 
                                     code = re.findall(
                                         r'(\d{4})(?:\s|\n|$)', body)

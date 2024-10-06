@@ -3,18 +3,7 @@ import email
 import re
 import os
 
-import time
-import pyperclip
-
 from email.header import decode_header
-
-from selenium import webdriver
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
-
-from selenium.webdriver.common.keys import Keys
-from selenium.webdriver.common.action_chains import ActionChains
 
 
 def get_code_email(user_email: str) -> str:
@@ -30,17 +19,17 @@ def get_code_email(user_email: str) -> str:
 
     if status == "OK":
 
-        message_ids = messages[0].split()
+        message_ids: list[str] = messages[0].split()
 
         if message_ids != []:
 
-            status, mensaje = mail.fetch(message_ids[-1], "(RFC822)")
+            status, message = mail.fetch(message_ids[-1], "(RFC822)")
 
-            for respuesta in mensaje:
+            for response in message:
 
-                if isinstance(respuesta, tuple):
+                if isinstance(response, tuple):
 
-                    email_message = email.message_from_bytes(respuesta[1])
+                    email_message = email.message_from_bytes(response[1])
 
                     subject, encoding = decode_header(
                         email_message["Subject"])[0]
@@ -48,7 +37,7 @@ def get_code_email(user_email: str) -> str:
                         subject = subject.decode(
                             encoding if encoding else "utf-8")
 
-                    new_subject = subject.replace(" ", "").replace(
+                    new_subject: str = subject.replace(" ", "").replace(
                         "FW:", "").replace("RV:", "").replace("هدایت:", "")
 
                     if ("Tu código de acceso único para Disney+".replace(" ", "") in new_subject) or ("Your one-time passcode for Disney+".replace(" ", "") in new_subject) or ("Votre code d'accès à usage unique pour Disney+".replace(" ", "") in new_subject):
@@ -72,30 +61,29 @@ def get_code_email(user_email: str) -> str:
             status, messages = mail.search(
                 None, '(HEADER From "Disney+")')
 
-            counter = 0
+            counter: int = 0
 
             if status == "OK":
 
-                message_ids = messages[0].split()
+                message_ids: list[str] = messages[0].split()
 
                 for msg_id in message_ids[::-1]:
 
-                    status, mensaje = mail.fetch(msg_id, "(RFC822)")
+                    status, message = mail.fetch(msg_id, "(RFC822)")
 
                     if status == "OK":
 
-                        for respuesta in mensaje:
+                        for response in message:
 
-                            if isinstance(respuesta, tuple):
+                            if isinstance(response, tuple):
 
                                 email_message = email.message_from_bytes(
-                                    respuesta[1])
+                                    response[1])
 
-                                to_email = email_message.get("To")
+                                to_email: str = email_message.get("To").lower(
+                                ).strip().replace("<", "").replace(">", "")
 
-                                print(to_email)
-
-                                if to_email.lower().strip().replace("<", "").replace(">", "") != user_email.lower().strip():
+                                if to_email != user_email.lower().strip():
                                     counter += 1
 
                                     if counter == 10:
@@ -108,7 +96,7 @@ def get_code_email(user_email: str) -> str:
                                     subject = subject.decode(
                                         encoding if encoding else "utf-8")
 
-                                new_subject = subject.replace(" ", "").replace(
+                                new_subject: str = subject.replace(" ", "").replace(
                                     "FW:", "").replace("RV:", "").replace("هدایت:", "")
 
                                 if ("Tu código de acceso único para Disney+".replace(" ", "") in new_subject) or ("Your one-time passcode for Disney+".replace(" ", "") in new_subject) or ("Votre code d'accès à usage unique pour Disney+".replace(" ", "") in new_subject):
