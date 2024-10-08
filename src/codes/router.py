@@ -1,7 +1,6 @@
 from fastapi import APIRouter, status, Depends, BackgroundTasks, HTTPException
 from fastapi.responses import JSONResponse
-
-from src.codes.schemas import ChangePasswordSchema
+from src.codes.schemas import SessionCodes
 
 from src.codes.crud import *
 
@@ -9,28 +8,14 @@ from src.codes.crud import *
 codes_router = APIRouter()
 
 
-@codes_router.get("/disney/session_code/{email}", tags=["disney_codes"])
-def get_code_email(email: str) -> JSONResponse:
-    """
-    Retrieve a specific code associated with an email from the database.
+@codes_router.post("/disney/session_code/", tags=["disney_codes"])
+def get_code_email(user_input: SessionCodes) -> JSONResponse:
 
-    This function queries the database to find a code linked to the provided email. 
-    If no code is found, it raises a 404 HTTP exception.
+    if user_input.password != os.getenv("DISNEY_PASSWORD_CODE"):
+        raise HTTPException(status_code=401, detail="Unauthorized")
 
-    Args:
-        email (str): The email address to search for the associated code.
-        db (Session, optional): Database session dependency. Defaults to a FastAPI 
-                                dependency injection using `get_db()`.
-
-    Returns:
-        JSONResponse: A JSON response containing the code if found, 
-                      or a 404 HTTP exception if not found.
-
-    Raises:
-        HTTPException: Raised with status code 404 if no code is found for the given email.
-    """
     try:
-        code = get_code_email_by_email(email=email)
+        code = get_code_email_by_email(email=user_input.email)
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
@@ -101,10 +86,13 @@ def get_home_code(email: str) -> JSONResponse:
     return JSONResponse(content={"link": link}, status_code=status.HTTP_200_OK)
 
 
-@codes_router.get("/netflix/session_code/{email}", tags=["netflix_codes"])
-def get_session_code(email: str) -> JSONResponse:
+@codes_router.post("/netflix/session_code/", tags=["netflix_codes"])
+def get_session_code(user_input: SessionCodes) -> JSONResponse:
 
-    code = netflix_session_code_by_email(email=email)
+    if user_input.password != os.getenv("NETFLIX_PASSWORD_CODE"):
+        raise HTTPException(status_code=401, detail="Unauthorized")
+
+    code = netflix_session_code_by_email(email=user_input.email)
 
     if not code:
         raise HTTPException(status_code=404, detail="Code not found")

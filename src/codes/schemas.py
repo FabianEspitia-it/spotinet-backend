@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 
 
-class ChangePasswordSchema(BaseModel):
+class SessionCodes(BaseModel):
     email: str
-    new_password: str
+    password: str
