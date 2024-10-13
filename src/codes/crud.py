@@ -26,7 +26,7 @@ def get_temporal_access_code_by_email(email: str):
 
     time.sleep(8)
 
-    return get_netflix_code_email(user_email=email, email_subject=EMAIL_SUBJECT)
+    return call_get_netflix_code_email(user_email=email, email_subject=EMAIL_SUBJECT)
 
 
 def get_home_code_by_email(email: str) -> str:
@@ -35,11 +35,11 @@ def get_home_code_by_email(email: str) -> str:
         " ", "")
 
     time.sleep(8)
-    return get_netflix_code_email(user_email=email, email_subject=EMAIL_SUBJECT)
+    return call_get_netflix_code_email(user_email=email, email_subject=EMAIL_SUBJECT)
 
 
 def netflix_session_code_by_email(email: str) -> str:
 
     time.sleep(8)
 
-    return get_netflix_session_code(user_email=email)
+    return call_get_netflix_session_code(user_email=email)

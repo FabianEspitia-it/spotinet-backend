@@ -6,11 +6,11 @@ import re
 from email.header import decode_header
 
 
-def get_netflix_code_email(user_email: str, email_subject: str) -> str:
+def get_netflix_code_email(user_email: str, email_subject: str, imap_email: str, imap_password: str) -> str:
 
     mail = imaplib.IMAP4_SSL(os.getenv("IMAP_SERVER"))
 
-    mail.login(os.getenv("NETFLIX_EMAIL"), os.getenv("NETFLIX_PASSWORD"))
+    mail.login(imap_email, imap_password)
 
     mail.select("inbox")
 
@@ -65,12 +65,13 @@ def get_netflix_code_email(user_email: str, email_subject: str) -> str:
 
                                 if match:
 
-                                    link = match.group(0).replace(">", "")
+                                    link = match.group(0).replace(
+                                        ">", "").replace("]", "").replace("\r", "")
 
                                     return link
 
                                 else:
-                                    return 'No se encontró ningún link'
+                                    return None
 
                             else:
                                 print("No se encontró el asunto del correo")
@@ -138,12 +139,12 @@ def get_netflix_code_email(user_email: str, email_subject: str) -> str:
                                     if match:
 
                                         link = match.group(0).replace(
-                                            ">", "").replace("]", "")
+                                            ">", "").replace("]", "").replace("\r", "")
 
                                         return link
 
                                     else:
-                                        return 'No se encontró ningún link'
+                                        return None
 
                                 else:
                                     print("No se encontró el asunto del correo")
@@ -152,10 +153,25 @@ def get_netflix_code_email(user_email: str, email_subject: str) -> str:
     mail.close()
 
 
-def get_netflix_session_code(user_email: str):
+def call_get_netflix_code_email(user_email: str, email_subject: str) -> str:
+
+    emails: list[str] = [
+        os.getenv("NETFLIX_EMAIL"), os.getenv("NETFLIX_EMAIL_TWO")]
+    passwords: list[str] = [
+        os.getenv("NETFLIX_PASSWORD"), os.getenv("NETFLIX_PASSWORD_TWO")]
+
+    for email, password in zip(emails, passwords):
+        link = get_netflix_code_email(
+            user_email=user_email, email_subject=email_subject, imap_email=email, imap_password=password)
+
+        if link:
+            return link
+
+
+def get_netflix_session_code(user_email: str, imap_email: str, imap_password: str) -> str:
     mail = imaplib.IMAP4_SSL(os.getenv("IMAP_SERVER"))
 
-    mail.login(os.getenv("NETFLIX_EMAIL"), os.getenv("NETFLIX_PASSWORD"))
+    mail.login(imap_email, imap_password)
 
     mail.select("inbox")
 
@@ -205,7 +221,7 @@ def get_netflix_session_code(user_email: str):
                                     return code[1]
 
                                 else:
-                                    print("No se encontró el código")
+                                    return None
 
         else:
             status, messages = mail.search(
@@ -265,6 +281,21 @@ def get_netflix_session_code(user_email: str):
                                         return code[0]
 
                                     else:
-                                        print("No se encontró el código")
+                                        return None
 
     mail.close()
+
+
+def call_get_netflix_session_code(user_email: str) -> str:
+
+    emails: list[str] = [
+        os.getenv("NETFLIX_EMAIL"), os.getenv("NETFLIX_EMAIL_TWO")]
+    passwords: list[str] = [
+        os.getenv("NETFLIX_PASSWORD"), os.getenv("NETFLIX_PASSWORD_TWO")]
+
+    for email, password in zip(emails, passwords):
+        code = get_netflix_session_code(
+            user_email=user_email, imap_email=email, imap_password=password)
+
+        if code:
+            return code
