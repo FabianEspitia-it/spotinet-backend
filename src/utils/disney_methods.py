@@ -40,7 +40,7 @@ def get_code_email(user_email: str) -> str:
                     new_subject: str = subject.replace(" ", "").replace(
                         "FW:", "").replace("RV:", "").replace("هدایت:", "")
 
-                    if ("Tu código de acceso único para Disney+".replace(" ", "") in new_subject) or ("Your one-time passcode for Disney+".replace(" ", "") in new_subject) or ("Votre code d'accès à usage unique pour Disney+".replace(" ", "") in new_subject) or ("Jednorazowy kod dostępu do Disney+".replace(" ", "") in new_subject):
+                    if ("Tu código de acceso único para Disney+".replace(" ", "") in new_subject) or ("Your one-time passcode for Disney+".replace(" ", "") in new_subject) or ("Votre code d'accès à usage unique pour Disney+".replace(" ", "") in new_subject) or ("Jednorazowy kod dostępu do Disney+".replace(" ", "") in new_subject) or ("Ecco il tuo codice d'accesso temporaneo per Disney+".replace(" ", "") in new_subject):
 
                         if email_message.is_multipart():
                             for part in email_message.walk():
@@ -99,7 +99,7 @@ def get_code_email(user_email: str) -> str:
                                 new_subject: str = subject.replace(" ", "").replace(
                                     "FW:", "").replace("RV:", "").replace("هدایت:", "")
 
-                                if ("Tu código de acceso único para Disney+".replace(" ", "") in new_subject) or ("Your one-time passcode for Disney+".replace(" ", "") in new_subject) or ("Votre code d'accès à usage unique pour Disney+".replace(" ", "") in new_subject) or ("Jednorazowy kod dostępu do Disney+".replace(" ", "") in new_subject):
+                                if ("Tu código de acceso único para Disney+".replace(" ", "") in new_subject) or ("Your one-time passcode for Disney+".replace(" ", "") in new_subject) or ("Votre code d'accès à usage unique pour Disney+".replace(" ", "") in new_subject) or ("Jednorazowy kod dostępu do Disney+".replace(" ", "") in new_subject) or ("Ecco il tuo codice d'accesso temporaneo per Disney+".replace(" ", "") in new_subject):
 
                                     if email_message.is_multipart():
                                         for part in email_message.walk():
