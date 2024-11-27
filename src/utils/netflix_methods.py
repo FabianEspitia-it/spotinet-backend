@@ -78,9 +78,7 @@ def get_netflix_code_email(user_email: str, email_subject: str, imap_email: str,
                                 continue
         else:
             status, messages = mail.search(
-                None, '(FROM "info@account.netflix.com")')
-
-            counter: int = 0
+                None, f'(FROM "info@account.netflix.com" TO "{user_email}" SINCE "01-Nov-2024")')
 
             if status == "OK":
 
@@ -95,16 +93,6 @@ def get_netflix_code_email(user_email: str, email_subject: str, imap_email: str,
                             if isinstance(response, tuple):
                                 email_message = email.message_from_bytes(
                                     response[1])
-
-                                to_email: str = email_message.get("To").lower(
-                                ).strip().replace("<", "").replace(">", "")
-
-                                if to_email != user_email.lower().strip():
-                                    counter += 1
-
-                                    if counter == 10:
-                                        return None
-                                    continue
 
                                 subject, encoding = decode_header(
                                     email_message["Subject"])[0]
@@ -156,9 +144,9 @@ def get_netflix_code_email(user_email: str, email_subject: str, imap_email: str,
 def call_get_netflix_code_email(user_email: str, email_subject: str) -> str:
 
     emails: list[str] = [
-        os.getenv("NETFLIX_EMAIL"), os.getenv("NETFLIX_EMAIL_TWO")]
+        os.getenv("NETFLIX_EMAIL"), os.getenv("NETFLIX_EMAIL_TWO"), os.getenv("BOTH_EMAIL"), os.getenv("BOTH_EMAIL_TWO")]
     passwords: list[str] = [
-        os.getenv("NETFLIX_PASSWORD"), os.getenv("NETFLIX_PASSWORD_TWO")]
+        os.getenv("NETFLIX_PASSWORD"), os.getenv("NETFLIX_PASSWORD_TWO"), os.getenv("BOTH_PASSWORD"), os.getenv("BOTH_PASSWORD_TWO")]
 
     for email, password in zip(emails, passwords):
         link = get_netflix_code_email(
@@ -225,9 +213,7 @@ def get_netflix_session_code(user_email: str, imap_email: str, imap_password: st
 
         else:
             status, messages = mail.search(
-                None, '(FROM "info@account.netflix.com")')
-
-            counter: int = 0
+                None, f'(FROM "info@account.netflix.com" TO "{user_email}" SINCE "01-Nov-2024")')
 
             if status == "OK":
 
@@ -242,16 +228,6 @@ def get_netflix_session_code(user_email: str, imap_email: str, imap_password: st
                             if isinstance(response, tuple):
                                 email_message = email.message_from_bytes(
                                     response[1])
-
-                                to_email: str = email_message.get("To").lower(
-                                ).strip().replace("<", "").replace(">", "")
-
-                                if to_email != user_email.lower().strip():
-                                    counter += 1
-
-                                    if counter == 10:
-                                        return None
-                                    continue
 
                                 subject, encoding = decode_header(
                                     email_message["Subject"])[0]
@@ -289,9 +265,9 @@ def get_netflix_session_code(user_email: str, imap_email: str, imap_password: st
 def call_get_netflix_session_code(user_email: str) -> str:
 
     emails: list[str] = [
-        os.getenv("NETFLIX_EMAIL"), os.getenv("NETFLIX_EMAIL_TWO")]
+        os.getenv("NETFLIX_EMAIL"), os.getenv("NETFLIX_EMAIL_TWO"), os.getenv("BOTH_EMAIL"), os.getenv("BOTH_EMAIL_TWO")]
     passwords: list[str] = [
-        os.getenv("NETFLIX_PASSWORD"), os.getenv("NETFLIX_PASSWORD_TWO")]
+        os.getenv("NETFLIX_PASSWORD"), os.getenv("NETFLIX_PASSWORD_TWO"), os.getenv("BOTH_PASSWORD"), os.getenv("BOTH_PASSWORD_TWO")]
 
     for email, password in zip(emails, passwords):
         code = get_netflix_session_code(

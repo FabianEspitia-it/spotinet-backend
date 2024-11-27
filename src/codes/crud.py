@@ -1,6 +1,6 @@
 import time
 
-from src.utils.disney_methods import get_code_email
+from src.utils.disney_methods import *
 
 from src.utils.netflix_methods import *
 
@@ -9,7 +9,7 @@ def get_code_email_by_email(email: str) -> str:
 
     time.sleep(17)
 
-    return get_code_email(user_email=email)
+    return call_get_disney_session_code(user_email=email)
 
 
 """

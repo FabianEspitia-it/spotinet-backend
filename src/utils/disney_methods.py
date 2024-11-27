@@ -6,16 +6,19 @@ import os
 from email.header import decode_header
 
 
-def get_code_email(user_email: str) -> str:
+def get_code_email(user_email: str, imap_email: str, imap_password: str) -> str:
 
     mail = imaplib.IMAP4_SSL(os.getenv("IMAP_SERVER"), port=993)
 
-    mail.login(os.getenv("DISNEY_EMAIL"), os.getenv("DISNEY_PASSWORD"))
+    mail.login(imap_email, imap_password)
 
     mail.select("inbox")
 
+    print(user_email)
+
     status, messages = mail.search(
-        None, f'(FROM "{user_email}")')
+        None, f'(FROM "{user_email}" SINCE "01-Nov-2024")'
+    )
 
     if status == "OK":
 
@@ -40,7 +43,7 @@ def get_code_email(user_email: str) -> str:
                     new_subject: str = subject.replace(" ", "").replace(
                         "FW:", "").replace("RV:", "").replace("هدایت:", "")
 
-                    if ("Tu código de acceso único para Disney+".replace(" ", "") in new_subject) or ("Your one-time passcode for Disney+".replace(" ", "") in new_subject) or ("Votre code d'accès à usage unique pour Disney+".replace(" ", "") in new_subject) or ("Jednorazowy kod dostępu do Disney+".replace(" ", "") in new_subject) or ("Il tuo codice d'accesso temporaneo per Disney+".replace(" ", "") in new_subject) or ("Din engångskod till Disney+".replace(" ", "") in new_subject) or ("Seu código de acesso único para o Disney+".replace(" ", "") in new_subject) or ("Dein einmaliger Passcode für Disney+".replace(" ", "") in new_subject):
+                    if ("Tu código de acceso único para Disney+".replace(" ", "") in new_subject) or ("Your one-time passcode for Disney+".replace(" ", "") in new_subject) or ("Votre code d'accès à usage unique pour Disney+".replace(" ", "") in new_subject) or ("Jednorazowy kod dostępu do Disney+".replace(" ", "") in new_subject) or ("Il tuo codice d'accesso temporaneo per Disney+".replace(" ", "") in new_subject) or ("Din engångskod till Disney+".replace(" ", "") in new_subject) or ("Seu código de acesso único para o Disney+".replace(" ", "") in new_subject) or ("Dein einmaliger Passcode für Disney+".replace(" ", "") in new_subject) or ("Συνθηματικό μίας χρήσης για το Disney+".replace(" ", "") in new_subject):
 
                         if email_message.is_multipart():
                             for part in email_message.walk():
@@ -59,9 +62,9 @@ def get_code_email(user_email: str) -> str:
 
         else:
             status, messages = mail.search(
-                None, '(HEADER From "Disney+")')
+                None, f'(HEADER From "Disney+" TO "{user_email}" SINCE "01-Nov-2024")')
 
-            counter: int = 0
+            print(messages)
 
             if status == "OK":
 
@@ -80,16 +83,6 @@ def get_code_email(user_email: str) -> str:
                                 email_message = email.message_from_bytes(
                                     response[1])
 
-                                to_email: str = email_message.get("To").lower(
-                                ).strip().replace("<", "").replace(">", "")
-
-                                if to_email != user_email.lower().strip():
-                                    counter += 1
-
-                                    if counter == 10:
-                                        return None
-                                    continue
-
                                 subject, encoding = decode_header(
                                     email_message["Subject"])[0]
                                 if isinstance(subject, bytes):
@@ -99,7 +92,7 @@ def get_code_email(user_email: str) -> str:
                                 new_subject: str = subject.replace(" ", "").replace(
                                     "FW:", "").replace("RV:", "").replace("هدایت:", "")
 
-                                if ("Tu código de acceso único para Disney+".replace(" ", "") in new_subject) or ("Your one-time passcode for Disney+".replace(" ", "") in new_subject) or ("Votre code d'accès à usage unique pour Disney+".replace(" ", "") in new_subject) or ("Jednorazowy kod dostępu do Disney+".replace(" ", "") in new_subject) or ("Il tuo codice d'accesso temporaneo per Disney+".replace(" ", "") in new_subject) or ("Din engångskod till Disney+".replace(" ", "") in new_subject) or ("Seu código de acesso único para o Disney+".replace(" ", "") in new_subject) or ("Dein einmaliger Passcode für Disney+".replace(" ", "") in new_subject):
+                                if ("Tu código de acceso único para Disney+".replace(" ", "") in new_subject) or ("Your one-time passcode for Disney+".replace(" ", "") in new_subject) or ("Votre code d'accès à usage unique pour Disney+".replace(" ", "") in new_subject) or ("Jednorazowy kod dostępu do Disney+".replace(" ", "") in new_subject) or ("Il tuo codice d'accesso temporaneo per Disney+".replace(" ", "") in new_subject) or ("Din engångskod till Disney+".replace(" ", "") in new_subject) or ("Seu código de acesso único para o Disney+".replace(" ", "") in new_subject) or ("Dein einmaliger Passcode für Disney+".replace(" ", "") in new_subject) or ("Συνθηματικό μίας χρήσης για το Disney+".replace(" ", "") in new_subject):
 
                                     if email_message.is_multipart():
                                         for part in email_message.walk():
@@ -120,141 +113,16 @@ def get_code_email(user_email: str) -> str:
     mail.close()
 
 
-"""
-def introduce_credentials(user_email: str, new_password: str):
-    driver = webdriver.Chrome()
+def call_get_disney_session_code(user_email: str) -> str:
 
-    driver.get("https://www.disneyplus.com/identity/login/enter-email")
+    emails: list[str] = [
+        os.getenv("DISNEY_EMAIL"), os.getenv("BOTH_EMAIL"), os.getenv("BOTH_EMAIL_TWO")]
+    passwords: list[str] = [
+        os.getenv("DISNEY_PASSWORD"), os.getenv("BOTH_PASSWORD"), os.getenv("BOTH_PASSWORD_TWO")]
 
-    email_element = WebDriverWait(driver, 5).until(
-        EC.presence_of_element_located((By.XPATH, "//*[@id='email']"))
-    )
+    for email, password in zip(emails, passwords):
+        code = get_code_email(
+            user_email=user_email, imap_email=email, imap_password=password)
 
-    email_element.send_keys(user_email)
-
-    submit_button = WebDriverWait(driver, 5).until(
-        EC.element_to_be_clickable(
-            (By.CSS_SELECTOR, 'button[data-testid="continue-btn"]'))
-    )
-    submit_button.click()
-
-    try:
-
-        print("entramos")
-
-        wait = WebDriverWait(driver, 4)
-        first_input_box = wait.until(EC.presence_of_element_located(
-            (By.CSS_SELECTOR, 'div.passcode-key')))
-
-        time.sleep(18)
-
-        code_one = get_code_email(
-            user_email=user_email)
-
-        pyperclip.copy(code_one)
-
-        first_input_box.click()
-
-        action = ActionChains(driver)
-        action.key_down(Keys.CONTROL).send_keys(
-            'v').key_up(Keys.CONTROL).perform()
-
-        continue_button = WebDriverWait(driver, 5).until(
-            EC.element_to_be_clickable(
-                (By.CSS_SELECTOR, 'button[data-testid="continue-btn"]'))
-        )
-
-        time.sleep(2)
-
-        continue_button.click()
-
-    except:
-
-        driver.get("https://www.disneyplus.com/identity/login/enter-passcode")
-
-        time.sleep(18)
-
-        wait = WebDriverWait(driver, 4)
-        second_input_box = wait.until(EC.presence_of_element_located(
-            (By.CSS_SELECTOR, 'div.passcode-key')))
-
-        code_two = get_code_email(
-            user_email=user_email)
-
-        pyperclip.copy(code_two)
-
-        second_input_box.click()
-
-        action = ActionChains(driver)
-        action.key_down(Keys.CONTROL).send_keys(
-            'v').key_up(Keys.CONTROL).perform()
-
-        continue_button = WebDriverWait(driver, 5).until(
-            EC.element_to_be_clickable(
-                (By.CSS_SELECTOR, 'button[data-testid="continue-btn"]'))
-        )
-
-        time.sleep(2)
-
-        continue_button.click()
-
-        time.sleep(2)
-
-    time.sleep(10)
-
-    driver.get(
-        "https://www.disneyplus.com/es-419/commerce/account?pinned=true")
-
-    time.sleep(2)
-
-    user_element = WebDriverWait(driver, 5).until(
-        EC.presence_of_element_located(
-            (By.CSS_SELECTOR, '[data-testid="selected-avatar-image"]'))
-    )
-
-    user_element.click()
-
-    time.sleep(2)
-
-    driver.get(
-        "https://www.disneyplus.com/identity/update-credentials?updateType=ChangePassword")
-
-    time.sleep(18)
-
-    code = get_code_email(user_email=user_email)
-
-    pyperclip.copy(code)
-
-    wait = WebDriverWait(driver, 4)
-    third_input_box = wait.until(EC.presence_of_element_located(
-        (By.CSS_SELECTOR, 'div.passcode-key')))
-
-    third_input_box.click()
-
-    action = ActionChains(driver)
-    action.key_down(Keys.CONTROL).send_keys('v').key_up(Keys.CONTROL).perform()
-
-    continue_button = WebDriverWait(driver, 5).until(
-        EC.element_to_be_clickable(
-            (By.CSS_SELECTOR, 'button[data-testid="continue-btn"]'))
-    )
-
-    continue_button.click()
-
-    time.sleep(1)
-
-    password_input = driver.find_element(By.ID, "password")
-
-    password_input.send_keys(new_password)
-
-    submit_button = WebDriverWait(driver, 5).until(
-        EC.element_to_be_clickable(
-            (By.CSS_SELECTOR, 'button[data-testid="continue-btn"]'))
-    )
-
-    submit_button.click()
-
-    time.sleep(2)
-
-    driver.quit()
-"""
+        if code:
+            return code
